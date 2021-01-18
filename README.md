@@ -5,7 +5,20 @@ redux-saga-final-form
 
 This module is created as a replacement for unsupported redux-promise-listener or react-redux-promise-listener
 
+## Installation
+
+```bash
+npm install --save redux-saga-final-form
+```
+or
+```bash
+yarn add redux-saga-final-form
+```
+
+
 ## Usage
+
+
 
 ```javascript
 export const SettingsComponent = () => {
