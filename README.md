@@ -26,6 +26,7 @@ export const SettingsComponent = () => {
     return <Form initialValues={initialValues} onSubmit={formListener} validate={validate}>
         ...
     </Form>
+}
 ```
 
 and in your sagas:
