@@ -26,7 +26,7 @@ export function useListener(startActionType: string, resolveActionType: string, 
 function *handleEvent(action: any) {
     const cbInfo = pendingCallbacks.get(action.type)!;
     pendingCallbacks.delete(cbInfo.toClear)
-    cbInfo.callback();
+    cbInfo.callback(action.payload);
 }
 
 export function* finalFormSaga() {
