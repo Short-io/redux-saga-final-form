@@ -15,27 +15,46 @@ or
 yarn add redux-saga-final-form
 ```
 
-
 ## Usage
 
-
+in your form component
 
 ```javascript
-export const SettingsComponent = () => {
-    const formListener = useListener(DOMAIN_SAVE_SETTINGS, DOMAIN_SAVE_SETTINGS_SUCCESS, DOMAIN_SAVE_SETTINGS_ERROR);
-    return <Form initialValues={initialValues} onSubmit={formListener} validate={validate}>
-        ...
-    </Form>
-}
+import { useListener } from 'redux-saga-final-form';
+import { Form } from "react-final-form";
+
+export const MyComponent = () => {
+    const formListener = useListener(SUBMIT_START_ACTION, SUBMIT_SUCCESS_ACTION, SUBMIT_FAIL_ACTION);
+    return (
+        <Form
+            onSubmit={formListener}
+            render={(formRenderProps) => (
+                <form onSubmit={formRenderProps.handleSubmit}>
+                    ...
+                </form>
+            )}
+        />
+    );
+};
 ```
 
 and in your sagas:
 
 ```javascript
-import { finalFormSaga } from 'redux-saga-final-form'; 
+import { finalFormSaga } from 'redux-saga-final-form';
+import createSagaMiddleware from "redux-saga";
 
 const sagaMiddleware = createSagaMiddleware();
 ...
 sagaMiddleware.run(finalFormSaga);
+```
+
+SUBMIT_START_ACTION example:
+
+```javascript
+export const submitStatrAction = (payload: { formField1: string }) => ({
+    type: SUBMIT_START_ACTION
+    payload
+});
 ```
 
