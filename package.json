@@ -9,8 +9,11 @@
     "prepare": "tsc",
     "tsc": "tsc"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Andrii Kostenko",
+  "repository": "https://github.com/Short-io/redux-saga-final-form",
+  "readme": "https://github.com/Short-io/redux-saga-final-form#readme",
+  "bugs": "https://github.com/Short-io/redux-saga-final-form/issues",
+  "license": "MIT",
   "peerDependencies": {
     "react-redux": "^7.2.2",
     "redux-saga": "^1.1.3"
