@@ -8,7 +8,7 @@ export function useListener(startActionType: string, resolveActionType: string, 
     return (payload: any) => {
         const action = {
             type: startActionType,
-            payload: setPayload(payload) || payload
+            payload: setPayload?.(payload) ?? payload
         };
         return new Promise((resolve, reject) => {
             pendingCallbacks.set(resolveActionType, {
