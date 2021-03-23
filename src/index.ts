@@ -3,9 +3,13 @@ import { takeEvery } from 'redux-saga/effects';
 
 const pendingCallbacks = new Map<string, { callback: Function, toClear: string}>();
 
-export function useListener(startActionType: string, resolveActionType: string, rejectActionType: string) {
+export function useListener(startActionType: string, resolveActionType: string, rejectActionType: string, setPayload?: (payload: any) => Object) {
     const dispatch = useDispatch();
     return (payload: any) => {
+        const action = {
+            type: startActionType,
+            payload: setPayload(payload) || payload
+        };
         return new Promise((resolve, reject) => {
             pendingCallbacks.set(resolveActionType, {
                 callback: resolve,
@@ -15,10 +19,7 @@ export function useListener(startActionType: string, resolveActionType: string, 
                 callback: reject,
                 toClear: resolveActionType,
             });
-            dispatch({
-                type: startActionType,
-                payload
-            });
+            dispatch(action);
         })
     };
 }
