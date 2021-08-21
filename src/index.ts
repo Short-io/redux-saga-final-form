@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux';
-import { takeEvery } from 'redux-saga/effects';
+import { Middleware } from 'redux'
 
 const pendingCallbacks = new Map<string, { callback: Function, toClear: string}>();
 
@@ -24,12 +24,13 @@ export function useListener(startActionType: string, resolveActionType: string, 
     };
 }
 
-function *handleEvent(action: any) {
+
+export const handleListeners: Middleware = ({ getState }) => {
+  return next => action => {
     const cbInfo = pendingCallbacks.get(action.type)!;
     pendingCallbacks.delete(cbInfo.toClear)
     cbInfo.callback(action.payload);
-}
 
-export function* finalFormSaga() {
-    yield takeEvery((action: any) => !!pendingCallbacks.get(action.type), handleEvent);
+    return next(action)
+  }
 }
