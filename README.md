@@ -38,6 +38,17 @@ export const MyComponent = () => {
 };
 ```
 
+and in your sagas:
+
+```javascript
+import { finalFormSaga } from 'redux-saga-final-form';
+import createSagaMiddleware from "redux-saga";
+
+const sagaMiddleware = createSagaMiddleware();
+...
+sagaMiddleware.run(finalFormSaga);
+```
+
 SUBMIT_START_ACTION example:
 
 ```javascript
