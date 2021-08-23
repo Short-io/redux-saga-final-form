@@ -28,8 +28,10 @@ export function useListener(startActionType: string, resolveActionType: string, 
 export const handleListeners: Middleware = ({ getState }) => {
   return next => action => {
     const cbInfo = pendingCallbacks.get(action.type)!;
-    pendingCallbacks.delete(cbInfo.toClear)
-    cbInfo.callback(action.payload);
+    if (cbInfo) {
+        pendingCallbacks.delete(cbInfo.toClear)
+        cbInfo.callback(action.payload);
+    }
 
     return next(action)
   }
