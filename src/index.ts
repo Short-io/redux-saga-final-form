@@ -6,51 +6,60 @@ interface CbInfo {
     toClear: string;
 }
 
-const storeMap = new WeakMap<Dispatch, Map<string, CbInfo[]>>();
+let promiseCounter = 1;
+
+const promiseMap = new Map<number, {
+    resolve: Function,
+    reject: Function,
+}>()
 
 export function useListener(startActionType: string, resolveActionType: string, rejectActionType: string, setPayload?: (payload: any) => Object) {
     const dispatch = useDispatch();
     return (payload: any) => {
-        const action = {
-            type: startActionType,
-            payload: setPayload?.(payload) ?? payload
-        };
-        if (!storeMap.has(dispatch)) {
-            storeMap.set(dispatch, new Map())
-        }
-        const pendingCallbacks = storeMap.get(dispatch)!;
-
         return new Promise((resolve, reject) => {
-            if (!pendingCallbacks.has(resolveActionType)) {
-                pendingCallbacks.set(resolveActionType, []);
-            }
-            if (!pendingCallbacks.has(rejectActionType)) {
-                pendingCallbacks.set(rejectActionType, []);
-            }
-            pendingCallbacks.get(resolveActionType)!.push({
-                callback: resolve,
-                toClear: rejectActionType,
-            });
-            pendingCallbacks.get(rejectActionType)!.push({
-                callback: reject,
-                toClear: resolveActionType,
-            });
+            const promiseId = promiseCounter ++;
+            const action = {
+                type: startActionType,
+                payload: setPayload?.(payload) ?? payload,
+                meta: {
+                    final_form_promise: promiseId,
+                    final_form_resolve: resolveActionType,
+                    final_form_reject: rejectActionType,
+                }
+            };
+            promiseMap.set(promiseId, {resolve, reject})
             dispatch(action);
-        })
+        });
     };
 }
 
 
-export const handleListeners: Middleware = (store) => {
+export const handleListeners: Middleware = () => {
+  const pendingCallbacks = new Map<string, CbInfo[]>();
   return next => action => {
-    const pendingCallbacks = storeMap.get(store.dispatch)!;
-    if (pendingCallbacks) {
-        const cbInfos = pendingCallbacks.get(action.type)!;
-          if (cbInfos) {
-            for (const cbInfo of cbInfos) {
-                pendingCallbacks.delete(cbInfo.toClear)
-                cbInfo.callback(action.payload);
-            }
+    if (action.meta?.final_form_promise) {
+        if (!pendingCallbacks.has(action.meta.final_form_resolve)) {
+            pendingCallbacks.set(action.meta.final_form_resolve, []);
+        }
+        if (!pendingCallbacks.has(action.meta.final_form_reject)) {
+            pendingCallbacks.set(action.meta.final_form_reject, []);
+        }
+        pendingCallbacks.get(action.meta.final_form_resolve)!.push({
+            callback: promiseMap.get(action.meta.final_form_promise)!.resolve,
+            toClear: action.meta.final_form_reject,
+        })
+        pendingCallbacks.get(action.meta.final_form_reject)?.push({
+            callback: promiseMap.get(action.meta.final_form_promise)!.reject,
+            toClear: action.meta.final_form_resolve
+        });
+        promiseMap.delete(action.meta.final_form_promise)
+    }
+
+    const cbInfos = pendingCallbacks.get(action.type)!;
+        if (cbInfos) {
+        for (const cbInfo of cbInfos) {
+            pendingCallbacks.delete(cbInfo.toClear)
+            cbInfo.callback(action.payload);
         }
     }
 
