@@ -45,11 +45,13 @@ export function useListener(startActionType: string, resolveActionType: string, 
 export const handleListeners: Middleware = (store) => {
   return next => action => {
     const pendingCallbacks = storeMap.get(store as any)!;
-    const cbInfos = pendingCallbacks.get(action.type)!;
-      if (cbInfos) {
-        for (const cbInfo of cbInfos) {
-            pendingCallbacks.delete(cbInfo.toClear)
-            cbInfo.callback(action.payload);
+    if (pendingCallbacks) {
+        const cbInfos = pendingCallbacks.get(action.type)!;
+          if (cbInfos) {
+            for (const cbInfo of cbInfos) {
+                pendingCallbacks.delete(cbInfo.toClear)
+                cbInfo.callback(action.payload);
+            }
         }
     }
 
