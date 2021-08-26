@@ -43,8 +43,8 @@ export function useListener(startActionType: string, resolveActionType: string, 
 
 
 export const handleListeners: Middleware = (store) => {
-  const pendingCallbacks = storeMap.get(store as any)!;
   return next => action => {
+    const pendingCallbacks = storeMap.get(store as any)!;
     const cbInfos = pendingCallbacks.get(action.type)!;
       if (cbInfos) {
         for (const cbInfo of cbInfos) {
