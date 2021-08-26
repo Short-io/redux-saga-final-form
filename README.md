@@ -41,18 +41,21 @@ export const MyComponent = () => {
 and in your sagas:
 
 ```javascript
-import { finalFormSaga } from 'redux-saga-final-form';
+import { handleListeners } from "redux-saga-final-form";
 import createSagaMiddleware from "redux-saga";
 
-const sagaMiddleware = createSagaMiddleware();
-...
-sagaMiddleware.run(finalFormSaga);
+const store = createStore(
+  reducer,
+  initialState,
+  applyMiddleware(...otherMiddleware, handleListeners)
+)
+
 ```
 
 SUBMIT_START_ACTION example:
 
 ```javascript
-export const submitStatrAction = (payload: { formField1: string }) => ({
+export const submitStartAction = (payload: { formField1: string }) => ({
     type: SUBMIT_START_ACTION
     payload
 });
