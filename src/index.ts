@@ -13,6 +13,8 @@ const promiseMap = new Map<number, {
     reject: Function,
 }>()
 
+const finalFormPromiseId = Symbol('finalFormPromiseId');
+
 export function useListener(startActionType: string, resolveActionType: string, rejectActionType: string, setPayload?: (payload: any) => Object) {
     const dispatch = useDispatch();
     return (payload: any) => {
@@ -22,7 +24,7 @@ export function useListener(startActionType: string, resolveActionType: string, 
                 type: startActionType,
                 payload: setPayload?.(payload) ?? payload,
                 meta: {
-                    final_form_promise: promiseId,
+                    [finalFormPromiseId]: promiseId,
                     final_form_resolve: resolveActionType,
                     final_form_reject: rejectActionType,
                 }
@@ -37,7 +39,7 @@ export function useListener(startActionType: string, resolveActionType: string, 
 export const handleListeners: Middleware = () => {
   const pendingCallbacks = new Map<string, CbInfo[]>();
   return next => action => {
-    if (action.meta?.final_form_promise) {
+    if (action.meta?.[finalFormPromiseId]) {
         if (!pendingCallbacks.has(action.meta.final_form_resolve)) {
             pendingCallbacks.set(action.meta.final_form_resolve, []);
         }
@@ -45,14 +47,14 @@ export const handleListeners: Middleware = () => {
             pendingCallbacks.set(action.meta.final_form_reject, []);
         }
         pendingCallbacks.get(action.meta.final_form_resolve)!.push({
-            callback: promiseMap.get(action.meta.final_form_promise)!.resolve,
+            callback: promiseMap.get(action.meta[finalFormPromiseId])!.resolve,
             toClear: action.meta.final_form_reject,
         })
         pendingCallbacks.get(action.meta.final_form_reject)?.push({
-            callback: promiseMap.get(action.meta.final_form_promise)!.reject,
+            callback: promiseMap.get(action.meta[finalFormPromiseId])!.reject,
             toClear: action.meta.final_form_resolve
         });
-        promiseMap.delete(action.meta.final_form_promise)
+        promiseMap.delete(action.meta[finalFormPromiseId])
     }
 
     const cbInfos = pendingCallbacks.get(action.type)!;
