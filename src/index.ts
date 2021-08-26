@@ -1,25 +1,24 @@
 import { useDispatch, useStore } from 'react-redux';
-import { Middleware, Store } from 'redux'
+import { Middleware, Dispatch } from 'redux'
 
 interface CbInfo {
     callback: Function;
     toClear: string;
 }
 
-const storeMap = new WeakMap<Store, Map<string, CbInfo[]>>();
+const storeMap = new WeakMap<Dispatch, Map<string, CbInfo[]>>();
 
 export function useListener(startActionType: string, resolveActionType: string, rejectActionType: string, setPayload?: (payload: any) => Object) {
     const dispatch = useDispatch();
-    const store = useStore();
     return (payload: any) => {
         const action = {
             type: startActionType,
             payload: setPayload?.(payload) ?? payload
         };
-        if (!storeMap.has(store)) {
-            storeMap.set(store, new Map())
+        if (!storeMap.has(dispatch)) {
+            storeMap.set(dispatch, new Map())
         }
-        const pendingCallbacks = storeMap.get(store)!;
+        const pendingCallbacks = storeMap.get(dispatch)!;
 
         return new Promise((resolve, reject) => {
             if (!pendingCallbacks.has(resolveActionType)) {
@@ -44,7 +43,7 @@ export function useListener(startActionType: string, resolveActionType: string, 
 
 export const handleListeners: Middleware = (store) => {
   return next => action => {
-    const pendingCallbacks = storeMap.get(store as any)!;
+    const pendingCallbacks = storeMap.get(store.dispatch)!;
     if (pendingCallbacks) {
         const cbInfos = pendingCallbacks.get(action.type)!;
           if (cbInfos) {
